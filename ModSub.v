@@ -1,3 +1,4 @@
+`include "./verilog/defines.v"
 module ModSub(input 					        clk,reset,
 			input      [`DATA_SIZE_ARB-1:0] q,
             input      [`DATA_SIZE_ARB-1:0] NTTin0,NTTin1,
@@ -12,12 +13,12 @@ assign msub     = NTTin0 - NTTin1;
 assign msub_q   = msub + q;
 assign msub_res = (msub[`DATA_SIZE_ARB] == 1'b0) ? msub[`DATA_SIZE_ARB-1:0] : msub_q[`DATA_SIZE_ARB-1:0];
 
-always@(posedge clk){
-    if(reset){
+always@(posedge clk)begin
+    if(reset)begin
         out <= 'b0;
-    }
-    else{
+    end
+    else begin
         out <= msub_res;
-    }
-}
+    end
+end
 endmodule

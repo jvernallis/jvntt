@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`define DATA_SIZE_ARB 8
+`include "./verilog/defines.v"
 
 module tb_ModularValidation();
 
@@ -13,17 +13,20 @@ module tb_ModularValidation();
 
     always #5 clk = (clk === 1'b0);
 
-    ModComb uut_comb (.clk(clk), .reset(reset), .sel(sel), .q(q), .NTTin0(in0), .NTTin1(in1), .out(out_comb));
+    ModComb dut_comb (.clk(clk), .reset(reset), .sel(sel), .q(q), .NTTin0(in0), .NTTin1(in1), .out(out_comb));
     ModAdd  ref_add  (.clk(clk), .reset(reset), .q(q), .NTTin0(in0), .NTTin1(in1), .out(out_add));
     ModSub  ref_sub  (.clk(clk), .reset(reset), .q(q), .NTTin0(in0), .NTTin1(in1), .out(out_sub));
 
     integer i;
 
     initial begin
+        $dumpfile("test.vcd");
+        $dumpvars(0,tb_ModularValidation);
+
         clk = 0;
         reset = 1;
         sel = 0;
-        q = 8'd251; 
+        q = 'd251; 
         in0 = 0;
         in1 = 0;
 
@@ -35,36 +38,33 @@ module tb_ModularValidation();
         $display("----------------------------------------------");
 
         for (i = 0; i < 32; i = i + 1) begin
+            #5 clk = (clk === 1'b1);
             // Generate Random Inputs
-            sel = $urandom % 2;           // Randomly choose Add (0) or Sub (1)
-            in0 = $urandom_range(0, 255); 
-            in1 = $urandom_range(0, 255);
+            sel = $urandom_range(0,1);           // Randomly choose Add (0) or Sub (1)
+            in0 = $urandom_range(0, 16383); 
+            in1 = $urandom_range(0, 16383);
 
-            // Wait for clock edge to load inputs, then another to see output 
-            @(posedge clk); 
-            #1;
+            #5 clk = (clk === 1'b0);
+            #5 clk = (clk === 1'b1);
 
             // Validate against the appropriate reference module
             if (sel == 1'b0) begin
                 if (out_comb !== out_add) begin
-                    $display("%t | FAIL | %d | %d | %d | (Expected Add: %d)", $time, in0, in1, out_comb, out_add);
-                    $stop;
+                    $display("%t | FAIL | %d | %d | %d | (Expected Add: %d)", $time, $signed(in0), $signed(in1), $signed(out_comb), $signed(out_add));
                 end else begin
-                    $display("%t | PASS | %d | %d | %d | (Add)", $time, in0, in1, out_comb);
+                    $display("%t | PASS | %d | %d | %d | (Add)", $time, $signed(in0), $signed(in1), $signed(out_comb));
                 end
             end else begin
                 if (out_comb !== out_sub) begin
-                    $display("%t | FAIL | %d | %d | %d | (Expected Sub: %d)", $time, in0, in1, out_comb, out_sub);
-                    $stop;
+                    $display("%t | FAIL | %d | %d | %d | (Expected Sub: %d)", $time, $signed(in0), $signed(in1), $signed(out_comb), $signed(out_sub));
                 end else begin
-                    $display("%t | PASS | %d | %d | %d | (Sub)", $time, in0, in1, out_comb);
+                    $display("%t | PASS | %d | %d | %d | (Sub)", $time, $signed(in0), $signed(in1), $signed(out_comb));
                 end
             end
+            #5 clk = (clk === 1'b0);
         end
 
-        $display("----------------------------------------------");
-        $display("Success: All 32 random test cases passed!");
-        $finish;
+        #20 $finish;
     end
 
 endmodule
