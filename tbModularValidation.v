@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "./verilog/defines.v"
+`include "defines.v"
 
 module tb_ModularValidation();
 

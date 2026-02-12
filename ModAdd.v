@@ -1,4 +1,4 @@
-`include "./verilog/defines.v"
+`include "defines.v"
 module ModAdd(input 					        clk,reset,
 			input      [`DATA_SIZE_ARB-1:0] q,
             input      [`DATA_SIZE_ARB-1:0] NTTin0,NTTin1,
